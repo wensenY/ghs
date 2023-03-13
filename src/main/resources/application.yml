@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: GHS
+  cache:
+    type: redis
+  redis:
+    host: 121.5.141.179
+    port: 6379
+    password: pjwarCKxaJPyeJpx
+    database: 1
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+server:
+  port: 9876
+
+
+
+
+

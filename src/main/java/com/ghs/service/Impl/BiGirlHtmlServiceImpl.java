@@ -25,18 +25,11 @@ public class BiGirlHtmlServiceImpl implements HtmlService {
         return null;
     }
     
-    @Override
-    public List<Thumbnail> parseHtml(String html) throws IOException {
-        return null;
-    }
+
     
     @Override
     public String parseDetailUrl(String url) throws IOException {
         return null;
     }
-    
-    @Override
-    public String parseDetailHtml(String html) throws IOException {
-        return null;
-    }
+
 }
