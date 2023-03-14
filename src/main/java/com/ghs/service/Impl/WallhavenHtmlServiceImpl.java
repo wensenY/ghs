@@ -14,44 +14,42 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class WallhavenHtmlServiceImpl implements HtmlService {
-
+    
     //redis
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
     @Resource
     private StringRedisServiceImpl stringRedisService;
-
-    private final String key = "wallhaven-";
-
-    public int getTotal() {
-        return stringRedisService.getListKey(key).size();
-    }
-
-    private static final String WALLHAVEN_URL = "https://wallhaven.cc/search?categories=011&purity=010&topRange=1d&sorting=hot&order=desc&page=%d";
-
-    //缓存对象
-    private static List<Thumbnail> thumbnails = new ArrayList<>();
-
-
+    @Resource
+    private HtmlUtil httpUtil;
+    
+    public final String KEY = "wallhaven-";
+    
+    
+    private static final String URL = "https://wallhaven.cc/search?categories=111&purity=010&sorting=hot&order=desc&page=%d";
+    
+    
     @Override
-    public List<Thumbnail> getThumbnails() {
-        return thumbnails;
+    public String getKey() {
+        return KEY;
     }
-
+    
     /**
-     * 定时获取图片缓存 1小时一次
+     * 定时获取图片缓存 每天凌晨0点和12点
      */
-    @Scheduled(cron = "0 0 0/1 * * ?")
+    @Scheduled(cron = "0 0 0,12 * * ?")
     @Override
     public void getThumbnailsByTime() {
         try {
-            for (int i = 1; i <= 10; i++) {
-                List<Thumbnail> collect = parseUrl(String.format(WALLHAVEN_URL, i)).stream().map(thumbnail -> {
+            for (int i = 1; i <= 15; i++) {
+                log.info("正在获取第{}页", i);
+                List<Thumbnail> collect = parseUrl(String.format(URL, i)).stream().map(thumbnail -> {
                     try {
                         thumbnail.setBigUrl(parseDetailUrl(thumbnail.getDetailUrl()));
                         return thumbnail;
@@ -59,26 +57,15 @@ public class WallhavenHtmlServiceImpl implements HtmlService {
                         throw new RuntimeException(e);
                     }
                 }).collect(Collectors.toList());
-                addThumbnails(collect);
+                httpUtil.addThumbnails(collect, KEY);
+                log.info("第{}页获取成功!", i);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    /**
-     * 添加缓存
-     */
-    private void addThumbnails(List<Thumbnail> thumbnails) {
-        for (Thumbnail thumbnail : thumbnails) {
-            if (!stringRedisService.hasKey(key + thumbnail.getUrl())) {
-                //如果不存在就添加
-                stringRedisService.set(key+getTotal(), thumbnail);
-                System.out.println("添加缓存成功! " + thumbnail.getUrl());
-            }
-        }
-    }
-
+    
+    
     /**
      * 传入首页的url，返回图片对象 带有缩略图地址和详情页地址
      */
@@ -94,8 +81,9 @@ public class WallhavenHtmlServiceImpl implements HtmlService {
         for (String s : split1) {
             String[] split2 = s.split("\"");
             thumbnails.add(Thumbnail.builder().url(split2[0]).build());
+           
         }
-
+        
         //获取详情页地址
         String[] split2 = html.split("<a class=\"preview\" href=\"");
         ArrayList<String> detailUrl = new ArrayList<>();
@@ -107,33 +95,30 @@ public class WallhavenHtmlServiceImpl implements HtmlService {
         thumbnails.forEach(thumbnail -> thumbnail.setDetailUrl(detailUrl.get(thumbnails.indexOf(thumbnail))));
         return thumbnails;
     }
-
+    
     /**
      * 传入详情页的url，返回图片对象 带有大图地址
      */
     @Override
     public String parseDetailUrl(String url) throws IOException {
         String html = HtmlUtil.getHtml(url);
+        log.info("解析详情页html成功!");
         //处理html
         //获取图片地址,匹配截取字符串
         String[] split = html.split("<img id=\"wallpaper\" src=\"");
         String[] split1 = split[1].split("\"");
-        System.out.println(split1[0]);
-        //睡眠1秒
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return split1[0];
     }
-
-
-    public Thumbnail getThumbnailByIndex(int random) {
-        Object o = stringRedisService.get(key + random);
-        if (o == null) {
-            return null;
+    
+    @Override
+    public Thumbnail getThumbnailByIndex(int index) {
+        Set<String> listKey = stringRedisService.getListKey(KEY);
+        //查询是否以index结尾的key
+        for (String s : listKey) {
+            if (s.endsWith(String.valueOf(index))) {
+                return (Thumbnail) stringRedisService.get(s);
+            }
         }
-        return (Thumbnail) o;
+        return null;
     }
 }

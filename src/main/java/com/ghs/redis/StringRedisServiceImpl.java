@@ -90,8 +90,7 @@ public class StringRedisServiceImpl implements RedisService {
      * 例如：pro_*
      */
     public Set<String> getListKey(String prefix) {
-        Set<String> keys = redisTemplate.keys(prefix.concat("*"));
-        return keys;
+        return redisTemplate.keys(prefix.concat("*"));
     }
 }
 
