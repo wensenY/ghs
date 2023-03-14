@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -28,7 +27,7 @@ public class BiGirlHtmlServiceImpl implements HtmlService {
     public final String KEY = "Big-Girl";
     
     
-    private static final String URL = "https://bi-girl.net/search-images/page/%d";
+    private static final String URL = "https://bi-girl.net/search-images/page/%d?sort=rank&category=all";
     
     
     @Override
@@ -39,7 +38,7 @@ public class BiGirlHtmlServiceImpl implements HtmlService {
     @Override
     public void getThumbnailsByTime() {
         try {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 30; i++) {
                 log.info("正在获取第{}页", i);
                 List<Thumbnail> collect = parseUrl(String.format(URL, i));
                 httpUtil.addThumbnails(collect, KEY);
@@ -84,6 +83,7 @@ public class BiGirlHtmlServiceImpl implements HtmlService {
     
     @Override
     public String parseDetailUrl(String url) throws IOException {
+        //暂无
         return null;
     }
     
