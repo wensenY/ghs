@@ -32,7 +32,7 @@ public class WallhavenHtmlServiceImpl implements HtmlService {
     public final String KEY = "wallhaven-";
     
     
-    private static final String URL = "https://wallhaven.cc/search?categories=111&purity=010&sorting=hot&order=desc&page=%d";
+    private static final String URL = "https://wallhaven.cc/search?categories=011&purity=010&topRange=1y&sorting=toplist&order=desc&page=%d";
     
     
     @Override
@@ -47,7 +47,7 @@ public class WallhavenHtmlServiceImpl implements HtmlService {
     @Override
     public void getThumbnailsByTime() {
         try {
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 50; i++) {
                 log.info("正在获取第{}页", i);
                 List<Thumbnail> collect = parseUrl(String.format(URL, i)).stream().map(thumbnail -> {
                     try {

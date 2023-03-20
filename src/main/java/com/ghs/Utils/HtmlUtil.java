@@ -3,9 +3,7 @@ package com.ghs.Utils;
 import com.ghs.entity.Thumbnail;
 import com.ghs.redis.StringRedisServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -50,23 +48,22 @@ public class HtmlUtil {
         return builder.toString();
     }
     
-    public  int getTotal(String key) {
+    public int getTotal(String key) {
         return stringRedisService.getListKey(key).size();
     }
     
     /**
      * 添加缓存
      */
-    public void addThumbnails(List<Thumbnail> thumbnails,String key) {
+    public void addThumbnails(List<Thumbnail> thumbnails, String key) {
         for (Thumbnail thumbnail : thumbnails) {
             //判断是否存在 以前缀+url+总数为key
             Set<String> listKey = stringRedisService.getListKey(key + thumbnail.getUrl());
             if (listKey.isEmpty()) {
                 //如果不存在就添加
-                stringRedisService.set(key + thumbnail.getUrl()+ getTotal(key), thumbnail);
+                stringRedisService.set(key + thumbnail.getUrl() + getTotal(key), thumbnail);
                 log.info("添加缓存成功,缓存key为:{}", key + thumbnail.getUrl() + getTotal(key));
-            }
-            else {
+            } else {
                 log.info("缓存已存在,自动跳过");
             }
         }

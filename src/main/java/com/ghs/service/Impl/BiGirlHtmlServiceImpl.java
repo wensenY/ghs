@@ -38,7 +38,7 @@ public class BiGirlHtmlServiceImpl implements HtmlService {
     @Override
     public void getThumbnailsByTime() {
         try {
-            for (int i = 1; i <= 30; i++) {
+            for (int i = 1; i <= 50; i++) {
                 log.info("正在获取第{}页", i);
                 List<Thumbnail> collect = parseUrl(String.format(URL, i));
                 httpUtil.addThumbnails(collect, KEY);
@@ -56,9 +56,6 @@ public class BiGirlHtmlServiceImpl implements HtmlService {
         //处理html
         ArrayList<Thumbnail> thumbnails = new ArrayList<>();
         //获取缩略图地址
-        
-        
-        //<a href = "https://pbs.twimg.com/media/FrBiBV7aYAMfikh.jpg" target = "_blank" rel = "noopener" class="img_a img_all" >
         //前缀
         String regex = "<a href=\"";
         //后缀
