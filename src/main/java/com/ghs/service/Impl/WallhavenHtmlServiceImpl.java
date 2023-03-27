@@ -48,8 +48,10 @@ public class WallhavenHtmlServiceImpl implements HtmlService {
     public void getThumbnailsByTime() {
         try {
             for (int i = 1; i <= 50; i++) {
-                log.info("正在获取第{}页", i);
-                List<Thumbnail> collect = parseUrl(String.format(URL, i)).stream().map(thumbnail -> {
+                //随机取1-1000的随机数
+                int random = (int) (Math.random() * 1000);
+                log.info("正在获取第{}页", random);
+                List<Thumbnail> collect = parseUrl(String.format(URL, random)).stream().map(thumbnail -> {
                     try {
                         thumbnail.setBigUrl(parseDetailUrl(thumbnail.getDetailUrl()));
                         return thumbnail;
@@ -58,7 +60,7 @@ public class WallhavenHtmlServiceImpl implements HtmlService {
                     }
                 }).collect(Collectors.toList());
                 httpUtil.addThumbnails(collect, KEY);
-                log.info("第{}页获取成功!", i);
+                log.info("第{}页获取成功!", random);
             }
         } catch (IOException e) {
             e.printStackTrace();
