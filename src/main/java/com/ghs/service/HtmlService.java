@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.util.List;
 
 public interface HtmlService {
-    List<Thumbnail> getThumbnails();
+    
+    String getKey();
     
     void getThumbnailsByTime();
     
@@ -21,5 +22,7 @@ public interface HtmlService {
      * 传入详情页的url，返回详情页的大图url
      */
     String parseDetailUrl(String url) throws IOException;
-
+    
+    Thumbnail getThumbnailByIndex(int random);
+    
 }
