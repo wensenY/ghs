@@ -92,7 +92,8 @@ public class BiGirlHtmlServiceImpl implements HtmlService {
         //查询是否以index结尾的key
         for (String s : listKey) {
             if (s.endsWith(String.valueOf(index))) {
-                return (Thumbnail) stringRedisService.get(s);
+                Thumbnail thumbnail = (Thumbnail) stringRedisService.get(s);
+                return thumbnail;
             }
         }
         return null;

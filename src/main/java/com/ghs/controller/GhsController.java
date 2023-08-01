@@ -2,6 +2,7 @@ package com.ghs.controller;
 
 import com.ghs.Utils.HtmlUtil;
 import com.ghs.entity.Thumbnail;
+import com.ghs.redis.StringRedisServiceImpl;
 import com.ghs.service.HtmlService;
 import com.ghs.service.Impl.HtmlServiceFactory;
 import org.springframework.stereotype.Controller;
@@ -20,7 +21,9 @@ public class GhsController {
     private HtmlUtil htmlUtil;
     @Resource
     private HtmlServiceFactory htmlServiceFactory;
-    
+    @Resource
+    private StringRedisServiceImpl stringRedisService;
+
     /**
      * 给缓存中加载数据
      */
@@ -29,7 +32,7 @@ public class GhsController {
     public void load(@RequestParam(defaultValue = "1") String type) {
         htmlServiceFactory.getHtmlService(type).getThumbnailsByTime();
     }
-    
+
     /**
      * 随机获取一张图片
      */
@@ -37,17 +40,26 @@ public class GhsController {
     @ResponseBody
     public Thumbnail random(@RequestParam(defaultValue = "1") String type) {
         HtmlService htmlService = htmlServiceFactory.getHtmlService(type);
+        Boolean hasKey = true;
+        Thumbnail thumbnail = null;
         int total = htmlUtil.getTotal(htmlService.getKey());
-        int random = (int) (Math.random() * total);
-        return htmlService.getThumbnailByIndex(random);
+        do {
+            int random = (int) (Math.random() * total);
+            thumbnail = htmlService.getThumbnailByIndex(random);
+            //检查是否已经存在redis中
+            hasKey = stringRedisService.hasKey("thumbnail" + thumbnail.getUrl());
+        } while (hasKey);   //如果存在则重新获取
+        //存入redis 过期时间为1天
+        stringRedisService.set("thumbnail" + thumbnail.getUrl(), "", 60 * 60 * 24);
+        return thumbnail;
     }
-    
+
     //重定向到随机图片
     @GetMapping("/getImg")
     public RedirectView randomUrl(@RequestParam(defaultValue = "1") String type) {
         return new RedirectView(random(type).getBigUrl());
     }
-    
+
     @GetMapping("/getTotal")
     @ResponseBody
     public int getTotal(@RequestParam(defaultValue = "1") String type) {
